@@ -1,0 +1,4 @@
+- [x] Remove the form-group div containing the Model Endpoint URL label and input field
+- [x] Remove the JavaScript code that checks for modelEndpoint value
+- [x] Change the download button text from "Download CSV" to "Download Results"
+- [x] Change the body background gradient to greyish blue (#4a5568 to #2d3748)

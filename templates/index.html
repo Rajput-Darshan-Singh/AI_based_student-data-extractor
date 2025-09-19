@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Result Extractor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+            position: relative;
+            background: #f7fafc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6fffa;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            color: #4a5568;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-success {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-success i {
+            color: #38a169;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .result-success h3 {
+            color: #22543d;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .result-success p {
+            color: #2f855a;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            background: #38a169;
+            color: white;
+            padding: 12px 0;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            width: 180px;
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background: #2f855a;
+            transform: translateY(-1px);
+        }
+
+        .error-container {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-container i {
+            color: #e53e3e;
+            margin-right: 8px;
+        }
+
+        .file-info {
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 20px;  /* Added margin at the bottom */
+            display: none;
+        }
+
+        .file-info i {
+            color: #4a5568;
+            margin-right: 8px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .features h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .feature-item i {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-item h4 {
+            color: #4a5568;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .feature-item p {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 30px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-pdf"></i> PDF Result Extractor</h1>
+            <p>Extract student results from PDF documents with AI-powered accuracy</p>
+        </div>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">Drop your PDF file here</div>
+                <div class="upload-subtext">or click to browse files</div>
+                <input type="file" id="fileInput" name="file" class="file-input" accept=".pdf" required>
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <i class="fas fa-file-pdf"></i>
+                <span id="fileName"></span>
+                <span id="fileSize"></span>
+            </div>
+
+
+
+            <button type="submit" class="btn" id="submitBtn">
+                <i class="fas fa-magic"></i> Extract Results
+            </button>
+        </form>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Processing...</div>
+        </div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="result-success">
+                <i class="fas fa-check-circle"></i>
+                <h3>Processing Complete!</h3>
+                <p id="resultMessage">Your results have been extracted successfully.</p>
+                <a href="#" class="download-btn" id="downloadBtn">Download Results</a>
+            </div>
+        </div>
+
+        <div class="error-container" id="errorContainer">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="errorMessage"></span>
+        </div>
+
+        <div class="features">
+            <h3>Features</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <i class="fas fa-brain"></i>
+                    <h4>AI Powered</h4>
+                    <p>Advanced AI extraction</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Secure</h4>
+                    <p>Files processed locally</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-file-csv"></i>
+                    <h4>CSV Export</h4>
+                    <p>Ready for analysis</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>Fast</h4>
+                    <p>Quick processing</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultContainer = document.getElementById('resultContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resultMessage = document.getElementById('resultMessage');
+
+        let currentTaskId = null;
+        let statusInterval = null;
+        let downloadInitiated = false;
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileInfo.style.display = 'block';
+            }
+        }
+
+        // Form submission
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(uploadForm);
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span>Uploading...';
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentTaskId = result.task_id;
+                    downloadInitiated = false;
+                    showProgress();
+                    startStatusPolling();
+                } else {
+                    showError(result.error || 'Upload failed');
+                    resetForm();
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+                resetForm();
+            }
+        });
+
+        function startStatusPolling() {
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/status/${currentTaskId}`);
+                    const status = await response.json();
+
+                    if (response.ok) {
+                        updateProgress(status);
+                        
+                        if (status.status === 'completed') {
+                            clearInterval(statusInterval);
+                            showResult(status);
+                        } else if (status.status === 'error') {
+                            clearInterval(statusInterval);
+                            showError(status.message);
+                            resetForm();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Status polling error:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProgress(status) {
+            progressFill.style.width = status.progress + '%';
+            progressText.textContent = status.message;
+        }
+
+        function showProgress() {
+            hideAllContainers();
+            progressContainer.style.display = 'block';
+        }
+
+        function showResult(status) {
+            hideAllContainers();
+            resultMessage.textContent = `Successfully extracted ${status.records_count} student records.`;
+            downloadBtn.href = `/download/${status.output_file}`;
+            resultContainer.style.display = 'block';
+            resetForm();
+        }
+
+        function showError(message) {
+            hideAllContainers();
+            errorMessage.textContent = message;
+            errorContainer.style.display = 'block';
+        }
+
+        function hideAllContainers() {
+            progressContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+        }
+
+        function resetForm() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-magic"></i> Extract Results';
+            progressFill.style.width = '0%';
+        }
+
+        // Download handling
+        downloadBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const downloadUrl = downloadBtn.getAttribute('href');
+            
+            try {
+                const response = await fetch(downloadUrl);
+                if (response.ok) {
+                    // Create a blob from the response
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = downloadUrl.split('/').pop();
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    showError('Download failed: ' + (await response.text()));
+                }
+            } catch (error) {
+                showError('Download error: ' + error.message);
+            }
+        });
+
+        // Modified unload handler
+        window.addEventListener('beforeunload', () => {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+        });
+    </script>
+</body>
+</html>
