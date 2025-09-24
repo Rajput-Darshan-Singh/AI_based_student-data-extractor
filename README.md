@@ -9,8 +9,11 @@ A professional web application that extracts student result data from PDF docume
 - 📊 **CSV Export**: Exports extracted data in a clean, structured CSV format
 - 🎨 **Modern UI**: Professional, responsive design with drag-and-drop functionality
 - ⚡ **Real-time Progress**: Live progress tracking during processing
-- 🔒 **Secure**: Files are processed locally and cleaned up automatically
-- 📱 **Responsive**: Works on desktop, tablet, and mobile devices
+
+
+## Why this project?
+My professor once mentioned how tedious it was to create semester divisions—she had to manually enter each student’s details into Excel and then sort them. To simplify this process and save her time, I built this project.
+
 
 ## Extracted Data Fields
 
