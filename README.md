@@ -1,4 +1,4 @@
-# PDF Result Extractor
+# AI Based PDF Result Extractor
 
 A professional web application that extracts student result data from PDF documents using AI-powered text processing. The application provides a modern, user-friendly interface for uploading PDF files and downloading the extracted data as CSV files.
 
